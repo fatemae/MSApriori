@@ -69,15 +69,15 @@ def sort(MIS):
     return M
 
 def init_pass(M,transaction):
-    sup_count={}	
+    support_count={}	
     for l in transaction :
         for str in l:
-            if str not in sup_count:
-                sup_count[str] = l.count(str)
+            if str not in support_count:
+                support_count[str] = l.count(str)
             else :
-                sup_count[str]+=l.count(str)
-    print(sup_count)
-    return sup_count
+                support_count[str]+=l.count(str)
+    print(support_count)
+    return support_count
 
 def printTree(start, tree, indent_width=4):
 
