@@ -68,16 +68,16 @@ def sort(MIS):
         M.append(item)
     return M
 
-def init_pass(tansaction):
-    d={}	
+def init_pass(M,transaction):
+    sup_count={}	
     for l in transaction :
         for str in l:
-            if str not in d:
-                d[str] = l.count(str)
+            if str not in sup_count:
+                sup_count[str] = l.count(str)
             else :
-                d[str]+=l.count(str)
-    print(d)
-    return d
+                sup_count[str]+=l.count(str)
+    print(sup_count)
+    return sup_count
 
 def printTree(start, tree, indent_width=4):
 
@@ -113,7 +113,7 @@ def main():
     n=0 
     transaction,MIS,n=readData()
     M=sort(MIS)
-    print(M)
+    print(M,T)
 
     
     # allExamples=a
