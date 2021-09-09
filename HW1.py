@@ -113,7 +113,7 @@ def main():
     n=0 
     transaction,MIS,n=readData()
     M=sort(MIS)
-    print(M,T)
+    print(M)
 
     
     # allExamples=a
