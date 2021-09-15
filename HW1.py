@@ -147,18 +147,24 @@ def main():
             if(c[0] not in MIS.keys()):
                 temp='rest'
 
-            if(support_count[tuple(c)]/n >= MIS[temp]):
+            #if (support_count[tuple(c)]/ n >= MIS[temp]):
+            if(support_count.get(tuple(c),0)/n >= MIS[temp]): #Pallavi1
                 F[k].append(c)
         k+=1
-    print('F:'+str(F))
-
+        print('F:'+str(F))
+    print(support_count)
+    outline=''
     for i,f in enumerate(F):
         if(i!=0):
             if len(f)>0 :
-                print("(Length-"+str(i)+" "+str(len(f)))
+                outline += ("(Length-"+str(i)+" "+str(len(f)))
                 for item in f:
-                    print("\t",end='')
-                    print(item)
-                print(")")
+                    outline+= "\n"
+                    outline+= "\t("
+                    outline+= (str(' '.join(item)) +")" if isinstance(item, list)  else item +")")
+                outline+= (")\n")
+    print(outline)
+    outfile = open("output.txt", "w")
+    outfile.write(outline)
 
 if __name__=="__main__":main()
