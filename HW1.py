@@ -7,48 +7,21 @@ import math
 import copy
 import csv
 import re    
+import itertools
 
-def MSApriori(examples, attribute, parent_examples,depth):
-    if(examples.empty):
-        return PluralityValue(parent_examples)
-    elif(sameClassification(examples)):
-        return examples['Result'][0]
-    elif(not attribute):
-        return PluralityValue(examples)
-    else:
-        # A = max((Importance(a,examples),a) for a in attribute)[1]
-        I={}
-        for a in attribute:
-            I[a]=(Importance(a,examples))
-        max_value = max(I.values())
-        max_keys = [k for k, v in I.items() if v == max_value]
-        A=max_keys[0]
-        tree = Node(depth)
-        tree.childs=[]
-        tree.value=A
-        attr=attribute
-        attr.remove(A)
-        for v in allExamples[A].unique():
-            exs=examples[examples[A] == v]
-            exs=exs.reset_index(drop=True)
-            subtree = DecisionTreeLearning(exs,attr,examples,depth+1)
-            if(isinstance(subtree,Node)):
-                subtree.branch = v
-                tree.childs.append(subtree)
-            else:
-                child=Node(depth+1)
-                child.value=subtree
-                child.branch=v
-                tree.childs.append(child)
-        return tree
-
+n=0
+transaction=[]
+MIS={}
+support_count={}
+rest=[]	
+    
 def readData():
     transaction=[]
     MIS={}
     with open('HW1-data.txt', 'r') as transactions:
         for data in transactions:
             transaction.append([x.strip() for x in data.split(',')])
-    print(transaction)
+    # print(transaction)
     n=len(transaction)
     with open('HW1-parameter.txt', 'r') as params:
         for data in params:
@@ -59,72 +32,133 @@ def readData():
             else :
                 valType=valType[valType.find('(')+1:valType.find(')')]
                 MIS[valType]=float(value)	
-    print(MIS)
-    return transaction,MIS,n
+    # print(MIS)
+    for t in transaction:
+        for item in t:
+            if(item not in MIS.keys() and item not in rest):
+                rest.append(item)
+    return transaction,MIS,n,sdc
 
 def sort(MIS):
-    M=[]
+    M={}
     for item,mis in sorted(MIS.items(), key=lambda x: x[1]):
-        M.append(item)
+        if item=="rest":
+            for i in rest:
+                M[i]=mis
+        else : M[item]=mis
     return M
 
 def init_pass(M,transaction):
-    support_count={}	
+    items = []
     for l in transaction :
         for str in l:
+            if str not in items:
+                items.append(str)
             if str not in support_count:
                 support_count[str] = l.count(str)
             else :
                 support_count[str]+=l.count(str)
+    print("support_count:",end='')
     print(support_count)
-    return support_count
+    L=[]
+    i=None
+    for item in M:
+        if i is not None:
+            if(item in support_count.keys() and support_count[item]/n >= M[i]):
+                L.append(item)
+        else:
+            if(item in support_count.keys() and support_count[item]/n >= M[item]):
+                L.append(item)
+                i=item
 
-def printTree(start, tree, indent_width=4):
+    print("L:",end='')
+    print(L)
+    return support_count,L
 
-    def ptree(start, tree, indent="   "):
-        if tree.depth == start:
-            if tree.childs is None:
-                if(tree.branch is None):
-                    print(tree.value)
-                else:
-                    print("("+tree.branch+")--"+tree.value)
-            else:
-                if(tree.branch is None):
-                    print(tree.value)
-                else:
-                    print("("+tree.branch+")--"+tree.value)
-                for child in tree.childs[:-1]:
-                    # print(indent + "├" + "─" * indent_width, end="")
-                    print(indent + "├" + "─" * indent_width, end="")
-                    ptree(tree.depth+1, child, indent + "│" + " " * 14)
-        # if parent not in tree:
-                child = tree.childs[-1]
-                print(indent + "└" + "─" * indent_width, end="")
-                ptree(tree.depth+1, child, indent + " " * 15)  # 4 -> 5
+def level2_candidate_gen(L, sdc):
+    C2 = []
+    for i,l in enumerate(L):
+        k=l
+        if(l not in MIS.keys()):
+            k='rest'
+        if(support_count[l]/n >= MIS[k]):
+            for h in range(i+1,len(L)):
+                if(support_count[L[h]]/n >= MIS[k] and abs(support_count[L[h]]-support_count[l])/n <= sdc):
+                    C2.append([l,L[h]])
+    return C2
 
-    parent = start
-    ptree(start, tree)
-
+def MScandidate_gen(F,sdc):
+    Ck = []
+    for f1 in F:
+        for f2 in F:
+            if(f1!=f2 and f1[:-1]==f2[:-1] and f1[-1]<f2[-1] and abs(support_count[f1[-1]]-support_count[f2[-1]])/n <= sdc):
+                c=f1+f2[-1:]
+                Ck.append(c)
+                s_list=list(itertools.combinations(c,len(c)-1))
+                for s in s_list:
+                    key1,key2=c[0],c[1]
+                    if(c[0] in rest):
+                        key1='rest'
+                    if(c[1] in rest):
+                        key2='rest'
+                    if(c[0] in s or MIS[key2]==MIS[key1]):
+                        if list(s) not in F:
+                            Ck.remove(c)
+                            break
+    return Ck
 
 def main():
-    # global allExamples
+    global n,MIS,transaction,support_count
     transaction=[]
     MIS={}
-    n=0 
-    transaction,MIS,n=readData()
-    M=sort(MIS)
+    transaction,MIS,n,sdc=readData()
+    M = sort(MIS)
+    support_count,L = init_pass(M,transaction)
+    print("M:",end='')
     print(M)
+    F = [[]]
+    C = {}
+    F.append([])
+    for l in L:
+        if (l not in MIS.keys()):
+            if(support_count[l]/n >= MIS['rest']):
+                F[1].append(l)  
+        elif (support_count[l]/n >= MIS[l]):
+            F[1].append(l)
+    k=2
+    while len(F[k-1])!=0:
+        F.append([])
+        if k==2 :
+            C[k] = level2_candidate_gen(L, sdc)
+        else : 
+            C[k] = MScandidate_gen(F[k-1],sdc)
+        
+        candidate_count={}
+        for t in transaction:
+            for c in C[k]:
+                if(set(c).issubset(set(t))):
+                    if tuple(c) not in candidate_count.keys():
+                        candidate_count[tuple(c)]=1
+                    else: candidate_count[tuple(c)]+=1
+        for c in candidate_count.keys():
+            support_count[c]=candidate_count[c]
+        for c in C[k]:
+            temp=c[0]
+            if(c[0] not in MIS.keys()):
+                temp='rest'
 
-    
-    # allExamples=a
-    # colnames.remove('Result')
-    # x=DecisionTreeLearning(a,colnames,a,0)
-    # print("############### Decision Tree ############")
-    # printTree(0,x)
+            if(support_count[tuple(c)]/n >= MIS[temp]):
+                F[k].append(c)
+        k+=1
+    print('F:'+str(F))
 
-    # print("\n\n############### Pruned Decision Tree ############")
-    # statisticalSignificanceTest(x,a)
-    # # x=sameClassification(a)
-    # printTree(0,x)
+    for i,f in enumerate(F):
+        if(i!=0):
+            if len(f)>0 :
+                print("(Length-"+str(i)+" "+str(len(f)))
+                for item in f:
+                    print("\t",end='')
+                    print(item)
+                print(")")
 
 if __name__=="__main__":main()
