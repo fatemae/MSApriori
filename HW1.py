@@ -84,12 +84,13 @@ def level2_candidate_gen(L, sdc):
                     C2.append([l,L[h]])
     return C2
 #Candidate generation for k>2
-def MScandidate_gen(F,sdc):
+def MScandidate_gen(F,M,sdc):
     Ck = []
     for f1 in F:
         for f2 in F:
-            if(f1!=f2 and f1[:-1]==f2[:-1] and f1[-1]<f2[-1] and abs(support_count[f1[-1]]-support_count[f2[-1]])/n <= sdc):
-                c=f1+f2[-1:]
+            if (f1 != f2 and f1[:-1] == f2[:-1] and M.index(f1[-1]) < M.index(f2[-1]) and abs(
+                    support_count[f1[-1]] - support_count[f2[-1]]) / n <= sdc): #Changed to get the order of keys right
+                c = f1 + f2[-1:]
                 Ck.append(c)
                 s_list=list(itertools.combinations(c,len(c)-1))
                 for s in s_list:
@@ -128,7 +129,7 @@ def main():
         if k==2 :
             C[k] = level2_candidate_gen(L, sdc)
         else : 
-            C[k] = MScandidate_gen(F[k-1],sdc)
+            C[k] = MScandidate_gen(F[k-1],list(M), sdc)
         candidate_count={}
         for t in transaction:
             for c in C[k]:
