@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 # MSAPriori Algorithm
-# Fatema Engineeringwala  
+# Fatema Engineeringwala
+# Pallavi Krishna Bhat
 
-import pandas as pd
-import math
-import copy
-import csv
-import re    
 import itertools
 
-n=0
-transaction=[]
-MIS={}
-support_count={}
-rest=[]	
-    
+n = 0
+transaction = []
+MIS = {}
+support_count = {}
+rest = []
+
+#readData: Read and store data in input files into variables
 def readData():
     transaction=[]
     MIS={}
@@ -38,7 +35,7 @@ def readData():
             if(item not in MIS.keys() and item not in rest):
                 rest.append(item)
     return transaction,MIS,n,sdc
-
+#Sort items as per their MIS values
 def sort(MIS):
     M={}
     for item,mis in sorted(MIS.items(), key=lambda x: x[1]):
@@ -47,7 +44,7 @@ def sort(MIS):
                 M[i]=mis
         else : M[item]=mis
     return M
-
+#Init Pass to generate L and support count
 def init_pass(M,transaction):
     items = []
     for l in transaction :
@@ -74,7 +71,7 @@ def init_pass(M,transaction):
     print("L:",end='')
     print(L)
     return support_count,L
-
+#Generate Candidate keys for k=2
 def level2_candidate_gen(L, sdc):
     C2 = []
     for i,l in enumerate(L):
@@ -86,7 +83,7 @@ def level2_candidate_gen(L, sdc):
                 if(support_count[L[h]]/n >= MIS[k] and abs(support_count[L[h]]-support_count[l])/n <= sdc):
                     C2.append([l,L[h]])
     return C2
-
+#Candidate generation for k>2
 def MScandidate_gen(F,sdc):
     Ck = []
     for f1 in F:
@@ -106,7 +103,7 @@ def MScandidate_gen(F,sdc):
                             Ck.remove(c)
                             break
     return Ck
-
+#Main: Includes the logic to find the final set of keys
 def main():
     global n,MIS,transaction,support_count
     transaction=[]
@@ -132,7 +129,6 @@ def main():
             C[k] = level2_candidate_gen(L, sdc)
         else : 
             C[k] = MScandidate_gen(F[k-1],sdc)
-        
         candidate_count={}
         for t in transaction:
             for c in C[k]:
@@ -153,6 +149,7 @@ def main():
         k+=1
         print('F:'+str(F))
     print(support_count)
+    #Print to the output file
     outline=''
     for i,f in enumerate(F):
         if(i!=0):
