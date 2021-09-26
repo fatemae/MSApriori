@@ -10,6 +10,7 @@ transaction = []
 MIS = {}
 support_count = {}
 rest = []
+tail_count={}
 
 #readData: Read and store data in input files into variables
 def readData():
@@ -35,6 +36,7 @@ def readData():
             if(item not in MIS.keys() and item not in rest):
                 rest.append(item)
     return transaction,MIS,n,sdc
+
 #Sort items as per their MIS values
 def sort(MIS):
     M={}
@@ -44,6 +46,7 @@ def sort(MIS):
                 M[i]=mis
         else : M[item]=mis
     return M
+
 #Init Pass to generate L and support count
 def init_pass(M,transaction):
     items = []
@@ -55,8 +58,8 @@ def init_pass(M,transaction):
                 support_count[str] = l.count(str)
             else :
                 support_count[str]+=l.count(str)
-    print("support_count:",end='')
-    print(support_count)
+    # print("support_count:",end='')
+    # print(support_count)
     L=[]
     i=None
     for item in M:
@@ -68,9 +71,10 @@ def init_pass(M,transaction):
                 L.append(item)
                 i=item
 
-    print("L:",end='')
-    print(L)
+    # print("L:",end='')
+    # print(L)
     return support_count,L
+
 #Generate Candidate keys for k=2
 def level2_candidate_gen(L, sdc):
     C2 = []
@@ -83,6 +87,7 @@ def level2_candidate_gen(L, sdc):
                 if(support_count[L[h]]/n >= MIS[k] and abs(support_count[L[h]]-support_count[l])/n <= sdc):
                     C2.append([l,L[h]])
     return C2
+
 #Candidate generation for k>2
 def MScandidate_gen(F,M,sdc):
     Ck = []
@@ -112,8 +117,8 @@ def main():
     transaction,MIS,n,sdc=readData()
     M = sort(MIS)
     support_count,L = init_pass(M,transaction)
-    print("M:",end='')
-    print(M)
+    # print("M:",end='')
+    # print(M)
     F = [[]]
     C = {}
     F.append([])
@@ -137,30 +142,32 @@ def main():
                     if tuple(c) not in candidate_count.keys():
                         candidate_count[tuple(c)]=1
                     else: candidate_count[tuple(c)]+=1
+                if(set(c[1:]).issubset(set(t))):
+                    if tuple(c) not in tail_count.keys():
+                        tail_count[tuple(c)]=1
+                    else: tail_count[tuple(c)]+=1
         for c in candidate_count.keys():
             support_count[c]=candidate_count[c]
         for c in C[k]:
             temp=c[0]
             if(c[0] not in MIS.keys()):
                 temp='rest'
-
-            #if (support_count[tuple(c)]/ n >= MIS[temp]):
             if(support_count.get(tuple(c),0)/n >= MIS[temp]): #Pallavi1
                 F[k].append(c)
         k+=1
-        print('F:'+str(F))
-    print(support_count)
+    #     print('F:'+str(F))
+    # print(support_count)
     #Print to the output file
     outline=''
     for i,f in enumerate(F):
         if(i!=0):
             if len(f)>0 :
-                outline += ("(Length-"+str(i)+" "+str(len(f)))
+                outline += ("(Length-"+str(i)+"    "+str(len(f)))
                 for item in f:
                     outline+= "\n"
                     outline+= "\t("
                     outline+= (str(' '.join(item)) +")" if isinstance(item, list)  else item +")")
-                outline+= (")\n")
+                outline+= ("\n)\n")
     print(outline)
     outfile = open("output.txt", "w")
     outfile.write(outline)
