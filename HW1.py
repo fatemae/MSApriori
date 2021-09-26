@@ -143,9 +143,9 @@ def main():
                         candidate_count[tuple(c)]=1
                     else: candidate_count[tuple(c)]+=1
                 if(set(c[1:]).issubset(set(t))):
-                    if tuple(c) not in tail_count.keys():
-                        tail_count[tuple(c)]=1
-                    else: tail_count[tuple(c)]+=1
+                    if tuple(c[1:]) not in tail_count.keys():
+                        tail_count[tuple(c[1:])]=1
+                    else: tail_count[tuple(c[1:])]+=1
         for c in candidate_count.keys():
             support_count[c]=candidate_count[c]
         for c in C[k]:
