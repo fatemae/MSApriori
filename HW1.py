@@ -143,16 +143,16 @@ def main():
                         candidate_count[tuple(c)]=1
                     else: candidate_count[tuple(c)]+=1
                 if(set(c[1:]).issubset(set(t))):
-                    if tuple(c[1:]) not in tail_count.keys():
-                        tail_count[tuple(c[1:])]=1
-                    else: tail_count[tuple(c[1:])]+=1
+                    if tuple(c) not in tail_count.keys():
+                        tail_count[tuple(c)]=1
+                    else: tail_count[tuple(c)]+=1
         for c in candidate_count.keys():
             support_count[c]=candidate_count[c]
         for c in C[k]:
             temp=c[0]
             if(c[0] not in MIS.keys()):
                 temp='rest'
-            if(support_count.get(tuple(c),0)/n >= MIS[temp]): #Pallavi1
+            if(support_count.get(tuple(c),0)/n >= MIS[temp]):
                 F[k].append(c)
         k+=1
     #     print('F:'+str(F))
@@ -167,8 +167,12 @@ def main():
                     outline+= "\n"
                     outline+= "\t("
                     outline+= (str(' '.join(item)) +")" if isinstance(item, list)  else item +")")
-                outline+= ("\n)\n")
+                    #if isinstance(item, list):
+                    #    if (tuple(item) in tail_count.keys()):
+                    #        outline += ("\n    Tailcount = " + str(tail_count[tuple(item)]))
+                outline += ("\n)\n")
     print(outline)
+    print(tail_count)
     outfile = open("output.txt", "w")
     outfile.write(outline)
 
