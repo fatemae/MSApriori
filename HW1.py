@@ -172,7 +172,7 @@ def main():
                     #        outline += ("\n    Tailcount = " + str(tail_count[tuple(item)]))
                 outline += ("\n)\n")
     print(outline)
-    print(tail_count)
+    #print(tail_count)
     outfile = open("output.txt", "w")
     outfile.write(outline)
 
