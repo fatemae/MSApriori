@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # MSAPriori Algorithm
-# Fatema Engineeringwala (675589901)
+# Fatema Engineeringwala
 
 import itertools
 
